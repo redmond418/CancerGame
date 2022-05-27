@@ -38,10 +38,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _Corner: 0.2
     - _Down: 1
     - _Left: 1
     - _Right: 1
     - _Up: 1
-    - _Value: 0.36
+    - _Value: 0
     m_Colors: []
   m_BuildTextureStacks: []
