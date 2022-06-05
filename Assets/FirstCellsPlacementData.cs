@@ -70,8 +70,9 @@ public class CellsPlacementEditor : Editor
             {
                 data.cellsArray[i] = array2D[Mathf.FloorToInt(i / array2D.GetLength(0)), i % array2D.GetLength(0)];
             }
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(target);
         }
-        serializedObject.ApplyModifiedProperties();
     }
 }
 #endif
