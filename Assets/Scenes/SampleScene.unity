@@ -362,7 +362,7 @@ GameObject:
   - component: {fileID: 964255238}
   - component: {fileID: 964255237}
   m_Layer: 0
-  m_Name: cellsGenerator
+  m_Name: cellsController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
