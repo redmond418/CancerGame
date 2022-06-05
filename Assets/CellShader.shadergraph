@@ -2480,9 +2480,9 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -1947.199951171875,
+            "x": -1948.0,
             "y": 786.3999633789063,
-            "width": 207.9998779296875,
+            "width": 208.0,
             "height": 349.60003662109377
         }
     },
@@ -6376,7 +6376,7 @@
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
-    "m_Value": 0.36000001430511477,
+    "m_Value": 0.4000000059604645,
     "m_FloatType": 1,
     "m_RangeValues": {
         "x": 0.0,
