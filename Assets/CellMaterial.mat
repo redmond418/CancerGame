@@ -38,11 +38,15 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Corner: 0.2
+    - _Corner: 0.3
     - _Down: 1
     - _Left: 1
+    - _Reverse: 0
     - _Right: 1
+    - _Speed: 0.5
     - _Up: 1
     - _Value: 0
-    m_Colors: []
+    m_Colors:
+    - _VoronoiColor: {r: 0.2743172, g: 11.181761, b: 0, a: 1}
+    - _WallColor: {r: 0.26666668, g: 1.4980392, b: 0.5647059, a: 1}
   m_BuildTextureStacks: []
