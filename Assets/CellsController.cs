@@ -10,10 +10,23 @@ using UnityEditor;
 
 public class CellsController : MonoBehaviour
 {
+    class CellComponents
+    {
+        public SpriteRenderer spriteRenderer;
+        public CellCollision cellCollision;
+        public CellComponents(SpriteRenderer spri,CellCollision ceco)
+        {
+            spriteRenderer = spri;
+            cellCollision = ceco;
+        }
+    }
     [SerializeField] private FirstCellsPlacementData placement;
     [SerializeField] private SpriteRenderer cellPrefab;
-    List<SpriteRenderer> cellsInPool = new List<SpriteRenderer>();
+    [SerializeField] private float firstTime = 0.5f;
+    [SerializeField] private float span = 0.3f;
+    List<CellComponents> cellsInPool = new List<CellComponents>();
     SpriteRenderer[,] cells;
+    CellCollision[,] cellsCollisionSystem;
     int[,] nextCells;
 #if UNITY_EDITOR
     readonly Color gizmoColor = new Color(0, 1f, 0.4f, 0.3f);
@@ -52,28 +65,33 @@ public class CellsController : MonoBehaviour
     {
         bool[,] cellsBool = placement.To2DArray();
         cells = new SpriteRenderer[cellsBool.GetLength(0), cellsBool.GetLength(1)];
+        cellsCollisionSystem = new CellCollision[cellsBool.GetLength(0), cellsBool.GetLength(1)];
         nextCells = new int[cellsBool.GetLength(0), cellsBool.GetLength(1)];
         cellPrefab.gameObject.SetActive(true);
         for (int i = 0; i < cells.GetLength(1); i++)
         {
             for (int j = 0; j < cells.GetLength(0); j++)
             {
-                if(cellsBool[j,i]) cells[j, i] = Instantiate<SpriteRenderer>(cellPrefab,
+                if(cellsBool[j,i])
+                {
+                    cells[j, i] = Instantiate<SpriteRenderer>(cellPrefab,
                      new(j - cells.GetLength(1) * 0.5f + 0.5f, -i + cells.GetLength(0) * 0.5f - 0.5f), Quaternion.identity);
+                    cellsCollisionSystem[j, i] = cells[j, i].GetComponent<CellCollision>();
+                }
             }
         }
         //StartCoroutine(SetOtherSells());
         StartCoroutine(GetNextCells());
-        InvokeRepeating("CellsUpdate", 0.5f, 0.3f);
+        InvokeRepeating("CellsUpdate", firstTime, span);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        /*if (Input.GetKeyDown(KeyCode.Space))
         {
             CellsUpdate();
-        }
+        }*/
     }
 
     void CellsUpdate()
@@ -84,9 +102,11 @@ public class CellsController : MonoBehaviour
             {
                 if (nextCells[j, i] > 0)
                 {
-                    if (cellsInPool.Count(n => !n.gameObject.activeSelf) > 0)
+                    if (cellsInPool.Count(n => !n.spriteRenderer.gameObject.activeSelf) > 0)
                     {
-                        cells[j, i] = cellsInPool.First(n => !n.gameObject.activeSelf);
+                        CellComponents cellcom = cellsInPool.First(n => !n.spriteRenderer.gameObject.activeSelf);
+                        cells[j, i] = cellcom.spriteRenderer;
+                        cellsCollisionSystem[j, i] = cellcom.cellCollision;
                         cells[j, i].transform.position = new(j - cells.GetLength(1) * 0.5f + 0.5f, -i + cells.GetLength(0) * 0.5f - 0.5f);
                         Material cellM = cells[j, i].material;
                         int surroundingsMode = nextCells[j, i] - 1;
@@ -113,12 +133,14 @@ public class CellsController : MonoBehaviour
                                 .SetEase(Ease.InOutQuad);
                         }
                         cells[j, i].gameObject.SetActive(true);
-                        cellsInPool.Remove(cells[j, i]);
+                        cellsCollisionSystem[j, i].Generating(surroundingsMode, 0.2f);
+                        cellsInPool.RemoveAll(n => n.spriteRenderer == cells[j, i]);
                     }
                     else
                     {
                         cells[j, i] = Instantiate<SpriteRenderer>(cellPrefab,
                             new(j - cells.GetLength(1) * 0.5f + 0.5f, -i + cells.GetLength(0) * 0.5f - 0.5f), Quaternion.identity);
+                        cellsCollisionSystem[j, i] = cells[j, i].GetComponent<CellCollision>();
                         Material cellM = cells[j, i].material;
                         int surroundingsMode = nextCells[j, i] - 1;
                         if (surroundingsMode == 0)
@@ -143,12 +165,13 @@ public class CellsController : MonoBehaviour
                             cellM.DOFloat(0, "_Value", 0.2f)
                                 .SetEase(Ease.InOutQuad);
                         }
+                        cellsCollisionSystem[j, i].Generating(surroundingsMode, 0.2f);
                     }
                     nextCells[j, i] = 0;
                 }
                 else if (nextCells[j, i] < 0)
                 {
-                    cellsInPool.Add(cells[j, i]);
+                    cellsInPool.Add(new CellComponents(cells[j, i], cellsCollisionSystem[j, i]));
                     Material cellM = cells[j, i].material;
                     int surroundingsMode = -nextCells[j, i] - 1;
                     if (surroundingsMode == 0)
@@ -177,7 +200,9 @@ public class CellsController : MonoBehaviour
                                 .SetEase(Ease.InOutQuad)
                                 .OnComplete(() => cellObj.SetActive(false));
                     }
+                    cellsCollisionSystem[j, i].Deleting(surroundingsMode, 0.2f);
                     cells[j, i] = null;
+                    cellsCollisionSystem[j, i] = null;
                     nextCells[j, i] = 0;
                 }
             }
@@ -268,7 +293,11 @@ public class CellsController : MonoBehaviour
                 {
                     increaseCellsCount++;
                     nextCells[j, i] = info.y + 1;
-                    if(cellsInPool.Count < increaseCellsCount) cellsInPool.Add(Instantiate<SpriteRenderer>(cellPrefab));
+                    if(cellsInPool.Count < increaseCellsCount)
+                    {
+                        SpriteRenderer pref = Instantiate<SpriteRenderer>(cellPrefab);
+                        cellsInPool.Add(new CellComponents(pref,pref.GetComponent<CellCollision>()));
+                    }
                 }
             }
         }
