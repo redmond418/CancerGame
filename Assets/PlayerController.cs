@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,8 +12,9 @@ public class PlayerController : MonoBehaviour
     Rigidbody2D rigid2D;
     Collider2D colid2D;
     float direction = 0;
+    float pushedDirection = 0;
     bool onGround = false;
-    //bool pushed = false;
+    bool pushed = false;
     bool stop = false;
     // Start is called before the first frame update
     void Start()
@@ -24,7 +26,7 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetAxisRaw("Horizontal") == 0 && direction != 0/* && !pushed*/) stop = true;
+        if (Math.Sign(Input.GetAxisRaw("Horizontal")) != Math.Sign(direction)/* && !pushed*/) stop = true;
         direction = Input.GetAxisRaw("Horizontal");
         if (Input.GetButtonDown("Jump") && onGround)
         {
@@ -43,29 +45,43 @@ public class PlayerController : MonoBehaviour
             if(contact.normal.y >= 0.707f)
             {
                 onGroundCheck = true;
-                //if (pushed) pushed = false;
+                if (pushed) pushed = false;
+                if (pushedDirection != 0) pushedDirection = 0;
             }
         }
         if (onGround != onGroundCheck) onGround = onGroundCheck;
         //ˆÚ“®
-        if (onGround)
+        if (onGround && pushedDirection == 0)
         {
             rigid2D.velocity = new Vector2(direction * moveSpeed_Ground, rigid2D.velocity.y);
+            if (stop) stop = false;
+                print(pushed);
+
         }
         else if(direction == 0 || rigid2D.velocity.x * Mathf.Sign(direction) < moveSpeed_Ground)
         {
             if (stop)
             {
-                rigid2D.velocity = new Vector2(0, rigid2D.velocity.y);
+                rigid2D.velocity = new Vector2(pushedDirection, rigid2D.velocity.y);
                 stop = false;
             }
-            else rigid2D.AddForce(Vector2.right * direction * moveForce_Air);
+            else
+            {
+                rigid2D.AddForce(Vector2.right * direction * moveForce_Air);
+                if (rigid2D.velocity.x * Math.Sign(pushedDirection) < Mathf.Abs(pushedDirection) && pushedDirection != 0)
+                {
+                    if ((rigid2D.velocity.x > 0) != (pushedDirection > 0)) pushedDirection = 0;
+                    else pushedDirection = rigid2D.velocity.x;
+                }
+            }
         }
     }
 
     public void Push(Vector2 vector)
     {
         rigid2D.velocity = vector * pushedForce;
-        //pushed = true;
+        pushedDirection = vector.x * pushedForce;
+        print("p");
+        pushed = true;
     }
 }

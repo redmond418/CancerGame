@@ -200,7 +200,7 @@ public class CellsController : MonoBehaviour
                                 .SetEase(Ease.InOutQuad)
                                 .OnComplete(() => cellObj.SetActive(false));
                     }
-                    cellsCollisionSystem[j, i].Deleting(surroundingsMode, 0.2f);
+                    cellsCollisionSystem[j, i].Deleting(0.2f);
                     cells[j, i] = null;
                     cellsCollisionSystem[j, i] = null;
                     nextCells[j, i] = 0;
