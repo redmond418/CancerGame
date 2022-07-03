@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] StageManager stageManager;
     [SerializeField] float jumpForce = 10;
     [SerializeField] float moveSpeed_Ground = 5;
     [SerializeField] float moveForce_Air = 4;
@@ -13,8 +14,9 @@ public class PlayerController : MonoBehaviour
     Collider2D colid2D;
     float direction = 0;
     float pushedDirection = 0;
+    byte pushed = 0;
+    bool canMove = true;
     bool onGround = false;
-    bool pushed = false;
     bool stop = false;
     // Start is called before the first frame update
     void Start()
@@ -26,11 +28,23 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Math.Sign(Input.GetAxisRaw("Horizontal")) != Math.Sign(direction)/* && !pushed*/) stop = true;
-        direction = Input.GetAxisRaw("Horizontal");
-        if (Input.GetButtonDown("Jump") && onGround)
+        if(!stageManager.isPlaying && canMove)
         {
-            rigid2D.velocity = new Vector2(rigid2D.velocity.x, jumpForce);
+            if(direction != 0)
+            {
+                direction = 0;
+                stop = true;
+            }
+            canMove = false;
+        }
+        if (canMove)
+        {
+            if (Math.Sign(Input.GetAxisRaw("Horizontal")) != Math.Sign(direction)/* && !pushed*/) stop = true;
+            direction = Input.GetAxisRaw("Horizontal");
+            if (Input.GetButtonDown("Jump") && onGround)
+            {
+                rigid2D.velocity = new Vector2(rigid2D.velocity.x, jumpForce);
+            }
         }
     }
 
@@ -45,17 +59,20 @@ public class PlayerController : MonoBehaviour
             if(contact.normal.y >= 0.707f)
             {
                 onGroundCheck = true;
-                if (pushed) pushed = false;
-                if (pushedDirection != 0) pushedDirection = 0;
+                if (pushed == 3)
+                {
+                    pushed = 0;
+                    if (pushedDirection != 0) pushedDirection = 0;
+                }
             }
         }
         if (onGround != onGroundCheck) onGround = onGroundCheck;
         //ˆÚ“®
+        if (pushed > 0 && pushed <= 2) pushed++;
         if (onGround && pushedDirection == 0)
         {
             rigid2D.velocity = new Vector2(direction * moveSpeed_Ground, rigid2D.velocity.y);
             if (stop) stop = false;
-                print(pushed);
 
         }
         else if(direction == 0 || rigid2D.velocity.x * Mathf.Sign(direction) < moveSpeed_Ground)
@@ -81,7 +98,6 @@ public class PlayerController : MonoBehaviour
     {
         rigid2D.velocity = vector * pushedForce;
         pushedDirection = vector.x * pushedForce;
-        print("p");
-        pushed = true;
+        pushed = 1;
     }
 }
