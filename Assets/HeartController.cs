@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HeartController : MonoBehaviour
 {
-    [SerializeField] StageManager stageManager;
+    [SerializeField] GameManager gameManager;
     [SerializeField] ParticleSystem parti;
     [SerializeField] Collider2D colid2D;
     [SerializeField] Renderer rend0;
@@ -29,7 +29,7 @@ public class HeartController : MonoBehaviour
             rend1.enabled = false;
             colid2D.enabled = false;
             parti.Play();
-            stageManager.Goal();
+            gameManager.Goal();
         }
     }
 }

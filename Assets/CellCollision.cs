@@ -69,5 +69,6 @@ public class CellCollision : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (canPush) StageManager.player.Push(direction.normalized);
+        else StageManager.player.Die();
     }
 }
